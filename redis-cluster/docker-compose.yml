@@ -1,0 +1,190 @@
+services:
+  redis-node-1:
+    image: redis:7.2-alpine
+    command:
+      - redis-server
+      - --port
+      - "6379"
+      - --cluster-enabled
+      - "yes"
+      - --cluster-config-file
+      - nodes.conf
+      - --cluster-node-timeout
+      - "5000"
+      - --appendonly
+      - "yes"
+      - --protected-mode
+      - "no"
+    ports:
+      - "7000:6379"
+    volumes:
+      - redis-node-1-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis-node-2:
+    image: redis:7.2-alpine
+    command:
+      - redis-server
+      - --port
+      - "6379"
+      - --cluster-enabled
+      - "yes"
+      - --cluster-config-file
+      - nodes.conf
+      - --cluster-node-timeout
+      - "5000"
+      - --appendonly
+      - "yes"
+      - --protected-mode
+      - "no"
+    ports:
+      - "7001:6379"
+    volumes:
+      - redis-node-2-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis-node-3:
+    image: redis:7.2-alpine
+    command:
+      - redis-server
+      - --port
+      - "6379"
+      - --cluster-enabled
+      - "yes"
+      - --cluster-config-file
+      - nodes.conf
+      - --cluster-node-timeout
+      - "5000"
+      - --appendonly
+      - "yes"
+      - --protected-mode
+      - "no"
+    ports:
+      - "7002:6379"
+    volumes:
+      - redis-node-3-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis-node-4:
+    image: redis:7.2-alpine
+    command:
+      - redis-server
+      - --port
+      - "6379"
+      - --cluster-enabled
+      - "yes"
+      - --cluster-config-file
+      - nodes.conf
+      - --cluster-node-timeout
+      - "5000"
+      - --appendonly
+      - "yes"
+      - --protected-mode
+      - "no"
+    ports:
+      - "7003:6379"
+    volumes:
+      - redis-node-4-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis-node-5:
+    image: redis:7.2-alpine
+    command:
+      - redis-server
+      - --port
+      - "6379"
+      - --cluster-enabled
+      - "yes"
+      - --cluster-config-file
+      - nodes.conf
+      - --cluster-node-timeout
+      - "5000"
+      - --appendonly
+      - "yes"
+      - --protected-mode
+      - "no"
+    ports:
+      - "7004:6379"
+    volumes:
+      - redis-node-5-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis-node-6:
+    image: redis:7.2-alpine
+    command:
+      - redis-server
+      - --port
+      - "6379"
+      - --cluster-enabled
+      - "yes"
+      - --cluster-config-file
+      - nodes.conf
+      - --cluster-node-timeout
+      - "5000"
+      - --appendonly
+      - "yes"
+      - --protected-mode
+      - "no"
+    ports:
+      - "7005:6379"
+    volumes:
+      - redis-node-6-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis-cluster-init:
+    image: redis:7.2-alpine
+    depends_on:
+      redis-node-1:
+        condition: service_healthy
+      redis-node-2:
+        condition: service_healthy
+      redis-node-3:
+        condition: service_healthy
+      redis-node-4:
+        condition: service_healthy
+      redis-node-5:
+        condition: service_healthy
+      redis-node-6:
+        condition: service_healthy
+    command: >
+      sh -c '
+        if redis-cli -h redis-node-1 cluster info | grep -q "cluster_state:ok"; then
+          echo "Redis cluster already initialized";
+          exit 0;
+        fi;
+
+        yes yes | redis-cli --cluster create redis-node-1:6379 redis-node-2:6379 redis-node-3:6379 redis-node-4:6379 redis-node-5:6379 redis-node-6:6379 --cluster-replicas 1
+      '
+    restart: "no"
+
+volumes:
+  redis-node-1-data:
+  redis-node-2-data:
+  redis-node-3-data:
+  redis-node-4-data:
+  redis-node-5-data:
+  redis-node-6-data:
